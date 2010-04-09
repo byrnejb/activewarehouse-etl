@@ -20,70 +20,128 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
+#
+
+
+THIS_NAME = "ActiveWarehouse-ETL"
+THIS_VERSION = ETL::VERSION::STRING
 
 require 'benchmark'
-require 'getoptlong'
 
-# Print a usage statement
-def usage #:nodoc:
-  puts "Usage: etl file [file file ...]" # TODO: add the command line options
-end
+require 'optparse'
+require 'ostruct'
+
+def options_parse(args)
+  options = OpenStruct.new
+  # set default option values if any
+  # options.backtrace = false
+  # options.outfile   = "/dev/null/"
+  # options.noemail   = true
+  # options.quiet     = false
+  # options.test      = false
+  # options.update    = false
+  # etc.
+
+  # Create parser
+  opts = OptionParser.new do |opts| 
+
+    opts.banner = "Usage: #{File.basename($0)} [options] " + 
+      "[control_file.ctl [control_file.ctl]] \n\n"
+
+    opts.on("-c file", "--config file", "Provide a database configuration",
+            "  file",
+            "  database.yml (default) \n") do |dbyml|
+      options.config = dbyml
+    end
+
+    opts.on("-l N", "--limit=N", "Limit the number of input rows read",
+            "  no limit (default) \n") do |limit|
+      options.limit  = limit.to_i
+    end
+
+    opts.on("-L", "--read-locally",
+            "Use locally cached source file",
+            "  produced by previous run",
+            "  do not use cached source (default) \n") do
+      options.read_locally = true
+    end
+
+    opts.on("-n", "--newlog",
+            "Write out a new log file",
+            "  or overwrite existing log file",
+            "  append to existing (default) \n") do
+      options.newlog = false
+    end
+
+    opts.on("-o N", "--offset=N", "Read input rows starting from offset",
+            "  0 (default) \n") do |offset|
+      options.limit  = offset.to_i
+    end
+
+    opts.on("-r path", "--rails-root=path",
+            "Specify path to RoR root directory ",
+            "  nil (default) \n") do |path|
+      options.rails_root = path
+    end
+
+    opts.on("-S", "--skip-bulk-import",
+            "Do not use bulk import", 
+            "  even if DBMS supports it",
+            "  Use bulk import if available (default) \n") do
+      options.skip_bulk_import = true
+    end
+    
+    opts.on("-v", "--version", "Show name and version, then exit \n") do
+      puts
+      puts "#{THIS_NAME}"
+      puts "Running as: #{$0}"
+      puts "Version: #{THIS_VERSION}"
+      puts
+      exit
+    end
+
+    # No argument, shows at tail.  This will print an options summary.
+    # Try it and see!
+    opts.on_tail("-h", "--help", "Show this message and exit \n") do
+      puts
+      puts "#{THIS_NAME}"
+      puts "Running as: #{$0}"
+      puts "Version: #{THIS_VERSION}"
+      puts
+      puts opts
+      puts
+      exit # print help and exit script
+    end
+  
+  end # end opts
+
+  opts.parse!(args)
+
+  # What is left in args from the command line drops to here
+  #
+
+  return options # return the parsed options array
+
+end # end parse
 
 def execute
-  opts = GetoptLong.new(
-    [ '--version', '-v', GetoptLong::NO_ARGUMENT],
-    [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-    [ '--config', '-c', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--limit', '-l', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--offset', '-o', GetoptLong::REQUIRED_ARGUMENT],
-    [ '--newlog', '-n', GetoptLong::NO_ARGUMENT ],
-    [ '--skip-bulk-import', '-s', GetoptLong::NO_ARGUMENT ],
-    [ '--read-locally', GetoptLong::NO_ARGUMENT],
-    [ '--rails-root', GetoptLong::REQUIRED_ARGUMENT]
-  )
-  
-  options = {}
-  opts.each do |opt, arg|
-    case opt
-    when '--version'
-      puts "ActiveWarehouse ETL version #{ETL::VERSION::STRING}"
-      return
-    when '--help'
-      usage
-      return
-    when '--config'
-      options[:config] = arg
-    when '--limit'
-      options[:limit] = arg.to_i
-    when '--offset'
-      options[:offset] = arg.to_i
-    when '--newlog'
-      options[:newlog] = true
-    when '--skip-bulk-import'
-      puts "skip bulk import enabled"
-      options[:skip_bulk_import] = true
-    when '--read-locally'
-      puts "read locally enabled"
-      options[:read_locally] = true
-    when '--rails-root'
-      options[:rails_root] = arg
-      puts "rails root set to #{options[:rails_root]}"
-    end
-  end
 
-  if ARGV.length < 1
-    usage
-  else
-    puts "Starting ETL process"
+  @argv = ARGV
+  options = options_parse(@argv).marshal_dump
 
-    ETL::Engine.init(options)
-    ARGV.each do |f|
-      ETL::Engine.realtime_activity = true
-      ETL::Engine.process(f)
-    end
-  
-    puts "ETL process complete\n\n"
+  puts "skip bulk import enabled" unless options[:skip_bulk_import]
+  puts "read locally enabled" if options[:read_locally]
+
+  puts "Starting ETL process"
+
+  ETL::Engine.init(options)
+  ARGV.each do |f|
+    ETL::Engine.realtime_activity = true
+    ETL::Engine.process(f)
   end
+  
+  puts "ETL process complete\n\n"
+
 end
 
 execute
