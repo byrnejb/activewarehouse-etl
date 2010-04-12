@@ -15,7 +15,8 @@ class ProcessorTest < Test::Unit::TestCase
   end
   
   def test_bulk_import_with_empties
-    assert_raise(ActiveRecord::StatementInvalid) { do_bulk_import('bulk_import_with_empties.txt') }
+    assert_raise(ActiveRecord::StatementInvalid) { 
+      do_bulk_import('bulk_import_with_empties.txt') }
   end
 
   def test_truncate
@@ -25,7 +26,8 @@ class ProcessorTest < Test::Unit::TestCase
   private
   
   def do_bulk_import(file = 'bulk_import.txt')
-    control = ETL::Control::Control.new(File.join(File.dirname(__FILE__), 'delimited.ctl'))
+    control = ETL::Control::Control.new(
+      File.join(File.dirname(__FILE__), 'control/delimited.ctl'))
     configuration = {
       :file => "data/#{file}",
       :truncate => true,

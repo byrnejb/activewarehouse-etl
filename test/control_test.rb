@@ -5,7 +5,8 @@ class ControlTest < Test::Unit::TestCase
   def test_parse
     assert_nothing_raised do
       Dir.glob('*.ctl') do |f|
-        ETL::Control::Control.parse(File.join(File.dirname(__FILE__), f))
+        ETL::Control::Control.parse(
+          File.join(File.dirname(__FILE__), 'control/' + f))
       end
     end
   end
@@ -18,13 +19,15 @@ class ControlTest < Test::Unit::TestCase
   
   def test_resolve_control_object
     assert_nothing_raised do
-      ETL::Control::Control.resolve(ETL::Control::Control.parse(File.join(File.dirname(__FILE__), 'delimited.ctl')))
+      ETL::Control::Control.resolve(ETL::Control::Control.parse(
+        File.join(File.dirname(__FILE__), 'control/delimited.ctl')))
     end
   end
   
   def test_set_error_threshold
     assert_nothing_raised do
-      ETL::Engine.process(File.join(File.dirname(__FILE__), 'errors.ctl'))
+      ETL::Engine.process(File.join(
+        File.dirname(__FILE__), 'control/errors.ctl'))
     end
   end
   

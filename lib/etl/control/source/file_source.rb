@@ -24,6 +24,7 @@ module ETL #:nodoc:
       # * <tt>:store_locally</tt>: Set to false to not store a copy of the 
       #   source data locally for archival
       def initialize(control, configuration, definition)
+        @prepend_config_dir_to_source = true
         super
         configure
       end
@@ -58,7 +59,14 @@ module ETL #:nodoc:
       def copy_sources
         sequence = 0
         path = Pathname.new(file)
-        path = path.absolute? ? path : Pathname.new(File.dirname(control.file)) + path
+#=begin
+        # This does not belong here.  The source files should be
+        # parsed and munged well befor this point
+        unless path.absolute?
+          path = Pathname.new(File.dirname(control.file)) + path
+        end
+#=end
+
         Pathname.glob(path).each do |f|
           next if f.directory?
           lf = local_file(sequence)
@@ -75,13 +83,15 @@ module ETL #:nodoc:
         when Class
           @parser = configuration[:parser].new(self)
         when String, Symbol
-          @parser = ETL::Parser::Parser.class_for_name(configuration[:parser]).new(self)
+          @parser = ETL::Parser::Parser.class_for_name(
+            configuration[:parser]).new(self)
         when Hash
           name = configuration[:parser][:name]
           options = configuration[:parser][:options]
           @parser = ETL::Parser::Parser.class_for_name(name).new(self, options)
         else
-          raise ControlError, "Configuration option :parser must be a Class, String or Symbol"
+          raise ControlError, 
+          "Configuration option :parser must be a Class, String or Symbol"
         end
         @skip_lines = configuration[:skip_lines] ||= 0
       end

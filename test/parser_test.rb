@@ -4,52 +4,73 @@ require File.dirname(__FILE__) + '/test_helper'
 class ParserTest < Test::Unit::TestCase
   # Test parsing delimited data
   def test_delimited_parser
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/delimited.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/delimited.ctl')
     parser = ETL::Parser::DelimitedParser.new(control.sources.first)
     rows = parser.collect { |row| row }
     assert_equal 3, rows.length
-    assert_equal({:first_name=>"Chris", :last_name=>"Smith", :ssn=>"111223333", :age=>"24", :sex => 'M'}, rows.first)
+    assert_equal({:first_name=>"Chris", 
+                 :last_name=>"Smith", 
+                 :ssn=>"111223333", 
+                 :age=>"24", 
+                 :sex => 'M'}, rows.first)
   end
   
   # Test parsing fixed-width data
   def test_fixed_width_parser
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/fixed_width.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/fixed_width.ctl')
     parser = ETL::Parser::FixedWidthParser.new(control.sources.first)
     rows = parser.collect { |row| row }
     assert_equal 3, rows.length
-    assert_equal({:first_name=>"Bob", :last_name=>"Smith", :ssn=>"123445555", :age=>"23"}, rows.first)
+    assert_equal({:first_name=>"Bob", 
+                 :last_name=>"Smith", 
+                 :ssn=>"123445555", 
+                 :age=>"23"}, rows.first)
   end
   
   # Test the DOM-based XML parser. Note that the DOM parser is slow and should
   # probably be removed.
   def test_xml_parser
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/xml.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/xml.ctl')
     parser = ETL::Parser::XmlParser.new(control.sources.first)
     rows = parser.collect { |row| row }
     assert_equal 2, rows.length
-    assert_equal({:first_name=>"Bob", :last_name=>"Smith", :ssn=>"123456789", :age=>"24"}, rows.first)
+    assert_equal({:first_name=>"Bob", 
+                 :last_name=>"Smith", 
+                 :ssn=>"123456789", 
+                 :age=>"24"}, rows.first)
   end
   
   # Test an inline parser
   def test_inline_parser
-    ETL::Engine.process(File.dirname(__FILE__) + '/inline_parser.ctl')
-    lines = open(File.dirname(__FILE__) + '/output/inline_parser.txt').readlines
+    ETL::Engine.process(File.dirname(__FILE__) + '/control/inline_parser.ctl')
+    lines = open(
+      File.dirname(__FILE__) + '/control/output/inline_parser.txt').readlines
     assert_equal 3, lines.length
   end
   
   # Test the SAX parser (preferred for XML parsing)
   def test_sax_parser
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/sax.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/sax.ctl')
     parser = control.sources.first.parser
     rows = parser.collect { |row| row }
     assert_equal 2, rows.length
-    assert_equal({:first_name=>"Bob", :last_name=>"Smith", :ssn=>"123456789", :age=>"24"}, rows.first)
+    assert_equal({:first_name=>"Bob", 
+                 :last_name=>"Smith", 
+                 :ssn=>"123456789", 
+                 :age=>"24"}, rows.first)
   end
   
   # Test the Apache combined log format parser
   def test_apache_combined_log_parser
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/apache_combined_log.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/apache_combined_log.ctl')
+
     parser = ETL::Parser::ApacheCombinedLogParser.new(control.sources.first)
+
     # first test the parse method
     line = %Q(127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://www.example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)")
     fields = parser.parse(line)
@@ -61,9 +82,11 @@ class ParserTest < Test::Unit::TestCase
     assert_equal '2326', fields[:bytes]
     assert_equal 'http://www.example.com/start.html', fields[:referrer]
     assert_equal 'Mozilla/4.08 [en] (Win98; I ;Nav)', fields[:user_agent]
+
     #now test the each method
     rows = parser.collect { |row| row }
     assert_equal 3, rows.length
+
     assert_equal({
       :user_agent=>"Mozilla/4.08 [en] (Win98; I ;Nav)",
       :browser_version_minor=>nil,
@@ -84,8 +107,9 @@ class ParserTest < Test::Unit::TestCase
       :identd=>nil,
       :referrer=>"http://www.example.com/start.html",
       :browser_version_major=>"4",
-      :user=>"frank"}, rows.first, 'Failed on first row')
-    assert_equal({
+      :user=>"frank"}, rows[0], 'Failed on first row')
+
+      assert_equal({
       :user_agent=>"Mozilla/4.08 [en] (Win98; I ;Nav)",
       :port=>80,
       :timestamp=>Time.mktime(2000, 10, 11, 5, 22, 2),
@@ -125,7 +149,8 @@ class ParserTest < Test::Unit::TestCase
       :user_agent=>"Mozilla/4.08 [en] (Win98; I ;Nav)",
       :identd=>nil,
       :uri_path=>nil,
-      :timestamp=>Time.mktime(2000, 10, 11, 5, 52, 31)}, rows[2], 'Failed on third row')
+      :timestamp=>Time.mktime(2000, 10, 11, 5, 52, 31)}, 
+        rows[2], 'Failed on third row')
   end
   
   # Test the user agent parser
@@ -142,7 +167,8 @@ class ParserTest < Test::Unit::TestCase
     AGENTS
     agents = agents.split("\n").collect { |s| s.strip }
 
-    control = ETL::Control::Control.resolve(File.dirname(__FILE__) + '/apache_combined_log.ctl')
+    control = ETL::Control::Control.resolve(
+      File.dirname(__FILE__) + '/control/apache_combined_log.ctl')
     parser = ETL::Parser::ApacheCombinedLogParser.new(control.sources.first)
     rows = parser.collect { |row| row }
     

@@ -19,12 +19,13 @@ class ScdTest < Test::Unit::TestCase
           assert_boston_address(find_bobs.first)
         end
         should "set the original id" do
-          assert_equal 1, find_bobs.first.id
+          assert_equal 1, find_bobs.first.object_id
         end
         should "skip the load if there is no change" do
           do_type_1_run(1)
           lines = lines_for('scd_test_type_1.txt')
-          assert lines.empty?, "scheduled load expected to be empty, was #{lines.size} records"
+          assert(lines.empty?, 
+            "scheduled load expected to be empty, was #{lines.size} records")
         end
       end
       context "on run 2" do
@@ -39,7 +40,7 @@ class ScdTest < Test::Unit::TestCase
           assert_los_angeles_address(find_bobs.last)
         end
         should "keep id" do
-          assert_equal 1, find_bobs.first.id
+          assert_equal 1, find_bobs.first.object_id
         end
         should "only change once even if run again" do
           do_type_1_run(2)
@@ -69,7 +70,7 @@ class ScdTest < Test::Unit::TestCase
           assert_boston_address(find_bobs.first)
         end
         should "set the original id" do
-          assert_equal 1, find_bobs.first.id
+          assert_equal 1, find_bobs.first.object_id
         end
         should "set the effective date" do
           # TODO: This is a test bug - if the tests don't run at the correct
@@ -194,7 +195,7 @@ class ScdTest < Test::Unit::TestCase
   def do_type_2_run(run_num)
     ENV['run_number'] = run_num.to_s
     assert_nothing_raised do
-      run_ctl_file("scd_test_type_2.ctl")
+      run_ctl_file("control/scd_test_type_2.ctl")
     end
   end
   
@@ -206,7 +207,7 @@ class ScdTest < Test::Unit::TestCase
   def do_type_1_run(run_num)
     ENV['run_number'] = run_num.to_s
     assert_nothing_raised do
-      run_ctl_file("scd_test_type_1.ctl")
+      run_ctl_file("control/scd_test_type_1.ctl")
     end
   end
   

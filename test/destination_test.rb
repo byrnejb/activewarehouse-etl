@@ -13,14 +13,18 @@ end
 class DestinationTest < Test::Unit::TestCase
   # Test a file destination
   def test_file_destination
+
+    # TODO resolve inconsistent use of file path
     outfile = 'output/test_file_destination.txt'
+    outfile_prepend = 'control/output/test_file_destination.txt'
     outfile2 = 'output/test_file_destination.2.txt'
+    outfile2_prepend = 'control/output/test_file_destination.2.txt'
     row = ETL::Row[ :address => '123 SW 1st Street', :city => 'Melbourne', 
       :state => 'Florida', :country => 'United States' ]
     row_needs_escape = ETL::Row[ :address => "Allen's Way", 
       :city => 'Some City', :state => 'Some State', :country => 'Mexico' ]
-    control = ETL::Control::Control.parse(File.dirname(__FILE__) + 
-      '/delimited.ctl')
+    control = ETL::Control::Control.parse(
+                File.dirname(__FILE__) + '/control/delimited.ctl')
 
     # First define a basic configuration to check defaults
     configuration = { 
@@ -54,12 +58,16 @@ class DestinationTest < Test::Unit::TestCase
     dest.close
     
     # Read back the resulting
-    lines = open(File.join(File.dirname(__FILE__), outfile), 'r').readlines
-    assert_equal "123 SW 1st Street,Melbourne,Florida,United States,US\n", lines[0]
+    lines = open(File.join(
+              File.dirname(__FILE__), outfile_prepend), 'r').readlines
+    assert_equal("123 SW 1st Street,Melbourne,Florida,United States,US\n", 
+                 lines[0])
     assert_equal "Allen's Way,Some City,Some State,Mexico,MX\n", lines[1]
     
-    lines = open(File.join(File.dirname(__FILE__), outfile2), 'r').readlines
-    assert_equal "123 SW 1st Street|Melbourne|Florida|United States|US[EOL]\n", lines[0]
+    lines = open(File.join(
+              File.dirname(__FILE__), outfile2_prepend), 'r').readlines
+    assert_equal("123 SW 1st Street|Melbourne|Florida|United States|US[EOL]\n", 
+                 lines[0])
     assert_equal "Allen's Way|Some City|Some State|Mexico|MX[EOL]\n", lines[1]
   end
   
@@ -67,8 +75,8 @@ class DestinationTest < Test::Unit::TestCase
   def test_database_destination
     row = ETL::Row[:id => 1, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
     row_needs_escape = ETL::Row[:id => 2, :first_name => "Foo's", :last_name => "Bar", :ssn => '000000000' ]
-    control = ETL::Control::Control.parse(File.dirname(__FILE__) + 
-      '/delimited.ctl')
+    control = ETL::Control::Control.parse(
+                File.dirname(__FILE__) + '/control/delimited.ctl')
     
     Person.delete_all
     assert_equal 0, Person.count
@@ -89,25 +97,34 @@ class DestinationTest < Test::Unit::TestCase
   end
   
   def test_database_destination_with_control
-    row = ETL::Row[:id => 1, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
-    control = ETL::Control::Control.parse(File.dirname(__FILE__) + 
-      '/delimited_destination_db.ctl')
+    row = ETL::Row[:id => 1, 
+      :first_name => 'Bob', 
+      :last_name => 'Smith', 
+      :ssn => '111234444']
+    control = ETL::Control::Control.parse(
+                File.dirname(__FILE__) + '/control/delimited_destination_db.ctl')
     Person.delete_all
     assert_equal 0, Person.count
     d = control.destinations.first
-    dest = ETL::Control::DatabaseDestination.new(control, d.configuration, d.mapping)
+    dest = ETL::Control::DatabaseDestination.new(
+            control, d.configuration, d.mapping)
     dest.write(row)
     dest.close
     assert_equal 1, Person.count
   end
   
   def test_unique
-    row1 = ETL::Row[:id => 1, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
-    row2 = ETL::Row[:id => 2, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
-    row3 = ETL::Row[:id => 3, :first_name => 'John', :last_name => 'Smith', :ssn => '000112222']
+    row1 = ETL::Row[:id => 1, 
+      :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
+    row2 = ETL::Row[:id => 2, 
+      :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
+    row3 = ETL::Row[:id => 3, 
+      :first_name => 'John', :last_name => 'Smith', :ssn => '000112222']
          
     outfile = 'output/test_unique.txt'
-    control = ETL::Control::Control.parse(File.dirname(__FILE__) + '/delimited.ctl')
+    outfile_prepend = 'control/output/test_unique.txt'
+    control = ETL::Control::Control.parse(
+                File.dirname(__FILE__) + '/control/delimited.ctl')
 
     # First define a basic configuration to check defaults
     configuration = { :file => outfile, :buffer_size => 0, :unique => [:ssn]}
@@ -123,18 +140,24 @@ class DestinationTest < Test::Unit::TestCase
     dest.close
     
     # Read back the resulting
-    lines = open(File.join(File.dirname(__FILE__), outfile), 'r').readlines
+    lines = open(File.join(
+              File.dirname(__FILE__), outfile_prepend), 'r').readlines
     assert_equal "Bob,Smith,111234444\n", lines[0]
     assert_equal "John,Smith,000112222\n", lines[1]
   end
   
   def test_multiple_unique
-    row1 = ETL::Row[:id => 1, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
-    row2 = ETL::Row[:id => 2, :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
-    row3 = ETL::Row[:id => 3, :first_name => 'Bob', :last_name => 'Smith', :ssn => '000112222']
+    row1 = ETL::Row[:id => 1, 
+      :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
+    row2 = ETL::Row[:id => 2, 
+      :first_name => 'Bob', :last_name => 'Smith', :ssn => '111234444']
+    row3 = ETL::Row[:id => 3, 
+      :first_name => 'Bob', :last_name => 'Smith', :ssn => '000112222']
     
     outfile = 'output/test_multiple_unique.txt'
-    control = ETL::Control::Control.parse(File.dirname(__FILE__) + '/delimited.ctl')
+    outfile_prepend = 'control/output/test_multiple_unique.txt'
+    control = ETL::Control::Control.parse(
+                File.dirname(__FILE__) + '/control/delimited.ctl')
 
     # First define a basic configuration to check defaults
     configuration = { :file => outfile, :buffer_size => 0, :unique => [:last_name,:first_name]}
@@ -150,7 +173,8 @@ class DestinationTest < Test::Unit::TestCase
     dest.close
     
     # Read back the resulting
-    lines = open(File.join(File.dirname(__FILE__), outfile), 'r').readlines
+    lines = open(File.join(
+              File.dirname(__FILE__), outfile_prepend), 'r').readlines
     assert_equal "Bob,Smith,111234444\n", lines[0]
     assert_equal 1, lines.length
   end

@@ -8,8 +8,9 @@ class ETLTest < Test::Unit::TestCase
     #ETL::Engine.logger.level = Logger::DEBUG
     
     ETL::Engine.init(:config => File.dirname(__FILE__) + '/database.yml')
-    ETL::Engine.process(File.dirname(__FILE__) + '/delimited.ctl')
-    lines = open(File.dirname(__FILE__) + '/output/delimited.txt').readlines
+    ETL::Engine.process(File.dirname(__FILE__) + '/control/delimited.ctl')
+    lines = open(
+      File.dirname(__FILE__) + '/control/output/delimited.txt').readlines
     assert_equal 3, lines.length
     
     data = lines[0].split(',')
@@ -35,8 +36,9 @@ class ETLTest < Test::Unit::TestCase
   
   # Test end-to-end integration of ETL engine processing for the fixed_width.ctl control file
   def test_fixed_width_single_file_load
-    ETL::Engine.process(File.dirname(__FILE__) + '/fixed_width.ctl')
-    lines = open(File.dirname(__FILE__) + '/output/delimited.txt').readlines
+    ETL::Engine.process(File.dirname(__FILE__) + '/control/fixed_width.ctl')
+    lines = open(
+      File.dirname(__FILE__) + '/control/output/delimited.txt').readlines
     assert_equal 3, lines.length
   end
 end

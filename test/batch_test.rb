@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/test_helper'
 class BatchTest < Test::Unit::TestCase
   attr_reader :file, :db_yaml, :engine
   def setup
-    @file =  File.dirname(__FILE__) + '/all.ebf'
+    @file =  File.dirname(__FILE__) + '/control/all.ebf'
     @db_yaml = File.dirname(__FILE__) + '/database.yml'
     @engine = ETL::Engine.new
   end

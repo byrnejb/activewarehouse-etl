@@ -37,6 +37,7 @@ def options_parse(args)
   # options.backtrace = false
   # options.outfile   = "/dev/null/"
   # options.noemail   = true
+  options.prepend_source = true
   # options.quiet     = false
   # options.test      = false
   # options.update    = false
@@ -48,50 +49,60 @@ def options_parse(args)
     opts.banner = "Usage: #{File.basename($0)} [options] " + 
       "[control_file.ctl [control_file.ctl]] \n\n"
 
-    opts.on("-c file", "--config file", "Provide a database configuration",
-            "  file",
-            "  database.yml (default) \n") do |dbyml|
+    opts.on("-c file", "--config file", "Provide a database configuration file.",
+            "(default) ./database.yml \n") do |dbyml|
       options.config = dbyml
     end
 
-    opts.on("-l N", "--limit=N", "Limit the number of input rows read",
-            "  no limit (default) \n") do |limit|
+    opts.on("-l N", "--limit=N", "Limit the number of input rows read.",
+            "(default) No limit \n") do |limit|
       options.limit  = limit.to_i
     end
 
     opts.on("-L", "--read-locally",
             "Use locally cached source file",
-            "  produced by previous run",
-            "  do not use cached source (default) \n") do
+            "  produced by previous run.",
+            "(default) Do not use cached source \n") do
       options.read_locally = true
     end
 
     opts.on("-n", "--newlog",
             "Write out a new log file",
-            "  or overwrite existing log file",
-            "  append to existing (default) \n") do
+            "  or overwrite existing log file.",
+            "(default) Append to existing \n") do
       options.newlog = false
     end
 
-    opts.on("-o N", "--offset=N", "Read input rows starting from offset",
-            "  0 (default) \n") do |offset|
+    opts.on("-o N", "--offset=N", "Read input rows starting from offset.",
+            "(default) 0 \n") do |offset|
       options.limit  = offset.to_i
     end
 
+    opts.on("-p", "--prepend", "Prepend config file directory",
+            "  if source is a relative path.",
+            "(default) Prepend path. \n") do
+      options.prepend_source = true
+    end
+
+    opts.on("-P", "--no-prepend", "Do not prepend config file directory",
+            "  if source is a relative path. \n") do
+      options.prepend_source = false
+    end
+
     opts.on("-r path", "--rails-root=path",
-            "Specify path to RoR root directory ",
-            "  nil (default) \n") do |path|
+            "Do not use, does not work yet.",
+            "Specify path to RoR root directory.",
+            "(default) nil \n") do |path|
       options.rails_root = path
     end
 
-    opts.on("-S", "--skip-bulk-import",
-            "Do not use bulk import", 
-            "  even if DBMS supports it",
-            "  Use bulk import if available (default) \n") do
+    opts.on("-S", "--skip-bulk-import", "Do not use bulk import", 
+            "  even where the DBMS supports it.",
+            "Do use bulk import if available (default) \n") do
       options.skip_bulk_import = true
     end
     
-    opts.on("-v", "--version", "Show name and version, then exit \n") do
+    opts.on("-v", "--version", "Show name and version, then exit. \n") do
       puts
       puts "#{THIS_NAME}"
       puts "Running as: #{$0}"

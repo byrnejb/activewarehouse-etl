@@ -21,8 +21,9 @@ module ETL #:nodoc:
         unless @initialized
           puts "initializing ETL engine\n\n"
           @limit = options[:limit]
-          @offset = options[:offset]
           @log_write_mode = 'w' if options[:newlog]
+          @prepend_control_dir_to_source = options[:prepend_source]
+          @offset = options[:offset]
           @skip_bulk_import = options[:skip_bulk_import]
           @read_locally = options[:read_locally]
           @rails_root = options[:rails_root]
@@ -83,6 +84,12 @@ module ETL #:nodoc:
       def timestamp
         Time.now.strftime("%Y%m%d%H%M%S")
       end
+      
+      # Accessor for the average rows per second processed
+      attr_accessor :average_rows_per_second
+      
+      # Access the current ETL::Execution::Batch instance
+      attr_accessor :batch
 
       # The current source
       attr_accessor :current_source
@@ -92,6 +99,27 @@ module ETL #:nodoc:
       
       # The current destination
       attr_accessor :current_destination
+      
+      # Access the current ETL::Execution::Job instance
+      attr_accessor :job
+      
+      # The limit on rows to load from the source, useful for testing the ETL
+      # process prior to executing the entire batch. Default value is nil and 
+      # indicates that there is no limit
+      attr_accessor :limit
+      
+      # The offset for the source to begin at, useful for testing the ETL
+      # process prior to executing the entire batch. Default value is nil and
+      # indicates that there is no offset
+      attr_accessor :offset
+
+      # Check if sorce data files speicified with relative paths are
+      # relative to the run or control file directories.  The default
+      # is relative to the control file
+      attr_accessor :prepend_control_directory_to_source
+      
+      # Set to true to read locally from the last source cache files
+      attr_accessor :read_locally
       
       # Set to true to activate realtime activity. This will cause certain 
       # information messages to be printed to STDOUT
@@ -109,30 +137,8 @@ module ETL #:nodoc:
         @rows_written ||= 0
       end
       
-      # Access the current ETL::Execution::Job instance
-      attr_accessor :job
-      
-      # Access the current ETL::Execution::Batch instance
-      attr_accessor :batch
-      
-      # The limit on rows to load from the source, useful for testing the ETL
-      # process prior to executing the entire batch. Default value is nil and 
-      # indicates that there is no limit
-      attr_accessor :limit
-      
-      # The offset for the source to begin at, useful for testing the ETL
-      # process prior to executing the entire batch. Default value is nil and
-      # indicates that there is no offset
-      attr_accessor :offset
-      
       # Set to true to skip all bulk importing
       attr_accessor :skip_bulk_import
-      
-      # Set to true to read locally from the last source cache files
-      attr_accessor :read_locally
-      
-      # Accessor for the average rows per second processed
-      attr_accessor :average_rows_per_second
       
       # Get a named connection
       def connection(name)
