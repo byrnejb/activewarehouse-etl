@@ -212,7 +212,7 @@ class ScdTest < Test::Unit::TestCase
   end
   
   def lines_for(file)
-    File.readlines(File.dirname(__FILE__) + "/output/#{file}")
+    File.readlines(File.dirname(__FILE__) + "/control/output/#{file}")
   end
   
   def run_ctl_file(file)
@@ -238,7 +238,8 @@ class ScdTest < Test::Unit::TestCase
         DateTime.parse(self["end_date"])
       end
       def bob.latest_version?
-        ActiveRecord::ConnectionAdapters::Column.value_to_boolean(self["latest_version"])
+        ActiveRecord::ConnectionAdapters::Column.value_to_boolean(
+          self["latest_version"])
       end
     end
     bobs
