@@ -1,4 +1,6 @@
+*\.swp
+*/**/*\.swp
 pkg/*
 source_data
-test/output/*
+test/**/output/*
 rdoc
