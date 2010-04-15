@@ -1,4 +1,9 @@
+\.pwdstatus
+*swp
+/**/*swp
 pkg/*
-source_data
-test/output/*
+/source_data
+/**/source_data
+/output
+/**/output/*
 rdoc
