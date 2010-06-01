@@ -30,9 +30,9 @@ require 'yaml'
 require 'erb'
 
 require 'rubygems'
+require 'rexml/rexml'
 
 unless defined?(REXML::VERSION)
-  require 'rexml/rexml'
   REXML::VERSION = REXML::Version
 end
 
