@@ -2,7 +2,7 @@ Ruby Extract-Transform-Load (ETL) tool.
 
 == Requirements
 
-* Ruby 1.8.5 or higher
+* Ruby 1.8.5 < ruby vm < Ruby 1.9
 * Rubygems
 
 == Online Documentation
