@@ -69,9 +69,11 @@ Command line options:
 * <tt>--config, -c</tt>: Specify a database.yml configuration file to use.
 * <tt>--limit, -l</tt>: Specify a limit to the number of rows to process. This option is currently only applicable to database sources.
 * <tt>--offset, -o</tt>: Specify the start offset for reading from the source. This option is currently only applicable to database sources.
+* <tt>--prepend, -p</tt>: Specify a path to prepend to each control file (unimplemented) 
 * <tt>--newlog, -n</tt>: Instruct the engine to create a new ETL log rather than append to the last ETL log.
 * <tt>--skip-bulk-import, -s</tt>: Skip any bulk imports.
-* <tt>--read-locally</tt>: Read from the local cache (skip source extraction)
+* <tt>--read-locally, -L</tt>: Read from the local cache (skip source extraction)
+* <tt>--rails_root, -r </tt>: Set the rails project root directory
 
 == Control File Examples
 Control file examples can be found in the examples directory.

@@ -90,9 +90,12 @@ def options_parse(args)
     end
 
     opts.on("-r path", "--rails-root=path",
-            "Do not use, does not work yet.",
-            "Specify path to RoR root directory.",
-            "(default) nil \n") do |path|
+            "Specify the path to the root",
+            "directory of the RoR project ",
+            "you wish to use.  May be absolute",
+            "or relative to the cwd you are",
+            "running ETL from.",
+            "(default) nil = ./ \n") do |path|
       options.rails_root = path
     end
 

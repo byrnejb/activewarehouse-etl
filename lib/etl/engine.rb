@@ -16,20 +16,28 @@ module ETL #:nodoc:
       # * <tt>:log_write_mode</tt>: If true then the log will write, otherwise it will append
       # * <tt>:skip_bulk_import</tt>: Set to true to skip bulk import
       # * <tt>:read_locally</tt>: Set to true to read from the local cache
-      # * <tt>:rails_root</tt>: Set to the rails root to boot rails
+      # * <tt>:rails_root</tt>: Set the rails project root directory
       def init(options={})
         unless @initialized
           puts "initializing ETL engine\n\n"
           @limit = options[:limit]
           @offset = options[:offset]
+          @@prepend = options[:prepend]
           @log_write_mode = 'w' if options[:newlog]
           @skip_bulk_import = options[:skip_bulk_import]
           @read_locally = options[:read_locally]
           @rails_root = options[:rails_root]
-          
+          @@rails_root = @rails_root
           require File.join(@rails_root, 'config/environment') if @rails_root
           options[:config] ||= 'database.yml'
-          options[:config] = 'config/database.yml' unless File.exist?(options[:config])
+          options[:config] = 'config/database.yml' unless 
+            File.exist?(options[:config])
+          unless File.exist?(options[:config])
+            if @rails_root
+              options[:config] = File.join(@rails_root,'config/database.yml')
+            end
+          end
+             
           database_configuration = YAML::load(ERB.new(IO.read(options[:config])).result + "\n")
           ActiveRecord::Base.configurations.merge!(database_configuration)
           ETL::Base.configurations = database_configuration
@@ -251,9 +259,28 @@ module ETL #:nodoc:
     # * File object
     # * ETL::Control::Control instance
     # * ETL::Batch::Batch instance
+    #
+    # If a path to a file is given it may either be absolute or relative
+    # to the current working directory.  If a bare file name is given then
+    # the cwd is searched, then ./config/etl is searched as well.  
+    #
+    # If the file is not found and the --rails-root option is set
+    # then the rails-root/path/to/file or rails-root/config/etl directory 
+    # is searched as well.
     def process(file)
       case file
       when String
+        unless Pathname(file).absolute? 
+          unless File.exist?(file)
+            file = File.join('config/etl', file) if
+              Pathname(file).dirname.to_s == "."
+          end
+          unless File.exist?(file)
+            if @@rails_root 
+              file = File.join(@@rails_root, file)
+            end
+          end
+        end
         process(File.new(file))
       when File
         process_control(file) if file.path =~ /.ctl$/
@@ -290,13 +317,15 @@ module ETL #:nodoc:
     def process_control(control)
       control = ETL::Control::Control.resolve(control)
       say_on_own_line "Processing control #{control.file}"
+
+      ETL::Engine.job = ETL::Execution::Job.new
       
-      ETL::Engine.job = ETL::Execution::Job.create!(
-        :control_file => control.file, 
-        :status => 'executing',
-        :batch_id => ETL::Engine.batch ? ETL::Engine.batch.id : nil
-      )
+        ETL::Engine.job.control_file = control.file 
+        ETL::Engine.job.status = 'executing'
+        ETL::Engine.job.batch_id = ETL::Engine.batch ? ETL::Engine.batch.id : nil
       
+      ETL::Engine.job.save!
+
       execute_dependencies(control)
       
       start_time = Time.now
