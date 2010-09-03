@@ -40,11 +40,15 @@ require 'active_support'
 require 'active_record'
 require 'adapter_extensions'
 
+
 if RUBY_VERSION < '1.9'
-  require 'faster_csv'
+  require 'fastercsv'
+  ETL_CSV = FasterCSV if not defined?(ETL_CSV)
 else
   require 'csv'
+  ETL_CSV = CSV if not defined?(ETL_CSV)
 end
+
 
 $:.unshift(File.dirname(__FILE__))
 

@@ -1,3 +1,6 @@
+0.9.3.jbb - 2010 September 03
+* CSV / FasterCSV compatibility modifications for Ruby-1.8 and Ruby-1.9.
+
 0.9.2.jbb - 2010 June 01
 * New OptionParser implemented 
 * Help text extensively expanded

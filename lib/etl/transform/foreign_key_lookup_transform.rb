@@ -149,8 +149,9 @@ class FlatFileResolver
   end
   
   # Get the rows from the file specified in the initializer.
+
   def rows
-    @rows ||= FasterCSV.read(@file)
+    @rows ||= ETL_CSV.read(@file)
   end
   protected :rows
   
