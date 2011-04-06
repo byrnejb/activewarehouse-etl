@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.authors = ["Anthony Eden"]
   s.bindir = %q{bin}
   s.date = %q{2008-08-14}
-  s.default_executable = %q{etl}
+#  s.default_executable = %q{etl}
   s.description = %q{ActiveWarehouse ETL is a pure Ruby Extract-Transform-Load application for loading data into a database.}
   s.email = %q{anthonyeden@gmail.com}
   s.executables = ["etl"]
