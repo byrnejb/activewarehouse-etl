@@ -2,7 +2,7 @@
 #
 # Requiring this file will require all of the necessary files to function.
 
-puts "Using AdapterExtensions"
+puts "Using AdapterExtensions" if ENV['RAILS_ENV'] == 'development'
 
 require 'rubygems'
 require 'active_support'
